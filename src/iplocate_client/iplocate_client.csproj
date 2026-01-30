@@ -4,6 +4,15 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+
+    <PackageId>IpLocate</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Siyabonga Mngadi</Authors>
+    <Description>Simple client for the IPLocate API</Description>
+    <PackageTags>ip geolocation http client</PackageTags>
+    <RepositoryUrl>https://github.com/siya-mngadi/csharp-iplocate</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
