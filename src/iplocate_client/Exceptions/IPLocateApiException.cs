@@ -3,15 +3,18 @@ using System.Net;
 
 namespace iplocate_client.Exceptions;
 
-public class IPLocateApiException : HttpRequestException
+public class IPLocateApiException : Exception
 {
+	public HttpStatusCode StatusCode { get; init; }
 	public IPLocateApiException(string message, HttpStatusCode statusCode)
-		: base(message, null, statusCode)
+		: base(message)
 	{
+		StatusCode = statusCode; 
 	}
 
 	public IPLocateApiException(string message, HttpStatusCode statusCode, Exception innerException) 
-		: base(message, innerException, statusCode)
+		: base(message, innerException)
 	{
+		StatusCode = statusCode;
 	}
 }
