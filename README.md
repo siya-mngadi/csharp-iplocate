@@ -2,6 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![NuGet](https://img.shields.io/nuget/v/IpLocate.svg?style=flat-square)](https://www.nuget.org/packages/IpLocate/)
+
+
 A C# client for the [IPLocate.io](https://iplocate.io) geolocation API. Look up detailed geolocation and threat intelligence data for any IP address:
 
 - **IP geolocation**: IP to country, IP to city, IP to region/state, coordinates, timezone, postal code
