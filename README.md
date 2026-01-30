@@ -32,7 +32,7 @@ dotnet add package IpLocate
 Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IPLocateClient` constructor:
 
 ```csharp
-IPLocateClient client = new IPLocateClient("your-api-key");
+IPLocateClient client = new IpLocateHttpClient("your-api-key");
 ```
 
 ### Quick start
