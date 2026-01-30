@@ -19,3 +19,30 @@ See what information we can provide for [your IP address](https://iplocate.io/wh
 ## Getting started
 
 You can make 1,000 free requests per day with a [free account](https://iplocate.io/signup). For higher plans, check out [API pricing](https://www.iplocate.io/pricing).
+
+## Installation
+
+### .NET CLI
+```cmd
+dotnet add package IpLocate
+```
+
+## Authentication
+
+Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IPLocateClient` constructor:
+
+```csharp
+IPLocateClient client = new IPLocateClient("your-api-key");
+```
+
+### Quick start
+
+```csharp
+using IpLocate;
+
+var client = new IpLocateHttpClient("YOUR_API_KEY");
+var result = await client.LookupCurrentIpAsync();
+
+Console.WriteLine($"IP: {result.Ip}, Country: {result.Country}");
+```
+
