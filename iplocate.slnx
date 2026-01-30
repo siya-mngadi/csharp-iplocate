@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/iplocate_client/iplocate_client.csproj" />
+  <Project Path="tests/iplocate_tests/iplocate_tests.csproj" />
+</Solution>

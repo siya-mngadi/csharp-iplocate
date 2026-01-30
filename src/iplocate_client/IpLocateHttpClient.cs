@@ -1,0 +1,183 @@
+﻿using iplocate_client.Exceptions;
+using iplocate_client.Models;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+namespace iplocate_client;
+
+public class IpLocateHttpClient : IPLocateService
+{
+	private const string DEFAULT_BASE_URL = "https://iplocate.io/api";
+	private const int DEFAULT_TIMEOUT_MS = 30000; // 30 seconds (maximum time for call)
+
+	private const string HEADER_ACCEPT = "Accept";
+    private const string HEADER_USER_AGENT = "User-Agent";
+    private const string CONTENT_TYPE_JSON = "application/json";
+    private const string QUERY_PARAM_API_KEY = "apikey";
+    private const string DEFAULT_USER_AGENT = "IPLocateClient-OkHttp/1.0";
+ 
+    private readonly string ApiKey;
+    private readonly string UserAgent;
+	private readonly Uri BaseUrl;
+	private readonly HttpClient httpClient;
+	private readonly JsonSerializerOptions jsonOptions = new (JsonSerializerDefaults.Web)
+	{
+		PropertyNameCaseInsensitive = true
+	};
+
+	public IpLocateHttpClient(string apiKey)
+		:this(apiKey, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT)
+	{
+	}
+
+	public IpLocateHttpClient(string apiKey, string baseUrl)
+		:this(apiKey, baseUrl, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT)
+	{
+	}
+
+	public IpLocateHttpClient(string apiKey, string baseUrl, int timeoutMs, string userAgent)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(apiKey, nameof(apiKey));	
+		ArgumentException.ThrowIfNullOrEmpty(baseUrl, nameof(baseUrl));		
+		ArgumentOutOfRangeException.ThrowIfNegative(timeoutMs, nameof(timeoutMs));
+
+		ApiKey = apiKey;
+		if(!Uri.TryCreate(baseUrl,UriKind.RelativeOrAbsolute ,out Uri Url))
+			throw new ArgumentException("Invalid base URL format: {baseUrl}", nameof(baseUrl));
+
+		BaseUrl = Url;
+		UserAgent = string.IsNullOrWhiteSpace(userAgent) ? DEFAULT_USER_AGENT : userAgent;
+
+		httpClient = new HttpClient
+		{
+			BaseAddress = Url,
+			Timeout = TimeSpan.FromMilliseconds(timeoutMs),
+			DefaultRequestHeaders =
+			{
+				{ HEADER_USER_AGENT, UserAgent },
+				{ HEADER_ACCEPT, CONTENT_TYPE_JSON },
+				{ QUERY_PARAM_API_KEY, ApiKey }
+			}
+		};
+	}
+
+	public async ValueTask<IPLocateResponse> LookupAsync(string ipAddress)
+	{
+		if(string.IsNullOrWhiteSpace(ipAddress))
+		{
+			throw new ArgumentException("IP address cannot be null or empty", nameof(ipAddress));
+		}
+
+		return await performLookup(ipAddress);
+	}
+
+	public async ValueTask<IPLocateResponse> LookupCurrentIpAsync()
+	{
+		return await performLookup(null);
+	}
+
+	private async ValueTask<IPLocateResponse> performLookup(string ipAddressPathSegment)
+	{	
+		var lookupPath = string.IsNullOrWhiteSpace(ipAddressPathSegment) ? "api/lookup" : $"api/lookup/{ipAddressPathSegment}";
+		var baseUri = new Uri(BaseUrl, lookupPath);
+
+		var request = new HttpRequestMessage(HttpMethod.Get, baseUri.AbsolutePath)
+		{
+			Headers =
+			{
+				{ HEADER_USER_AGENT, UserAgent },
+				{ HEADER_ACCEPT, CONTENT_TYPE_JSON },
+			}
+		};
+
+		try
+		{
+			var response = await httpClient.SendAsync(request);
+			if (response.IsSuccessStatusCode)
+			{
+				try
+				{
+					return await response.Content.ReadFromJsonAsync<IPLocateResponse>(jsonOptions);
+				}
+				catch (JsonException ex)
+				{
+					throw new IPLocateServiceException("Failed to parse IPLocate API response: " + ex.Message, response.StatusCode, ex);
+				}
+			}
+			else
+			{
+				await handleErrorResponse(response);
+				// Should not be reached as handleErrorResponse is always thrown
+				throw new IPLocateServiceException("Unexpected state after error handling.", response.StatusCode);
+			}
+		}
+		catch (HttpRequestException ex)
+		{
+			throw new IPLocateServiceException($"Network error or problem reaching IPLocate API: {ex.Message}", HttpStatusCode.ServiceUnavailable, ex);
+		}
+	}
+
+	private async Task handleErrorResponse(HttpResponseMessage response)
+	{
+		var statusCode = response.StatusCode;
+		string errorBodyString;
+
+		try
+		{
+			var body = await response.Content.ReadAsStringAsync();
+			errorBodyString = body ?? "";
+		}
+		catch (JsonException ex)
+		{
+			// This might happen if reading the error body itself fails.
+			// We still want to throw based on status code.
+			errorBodyString = "Failed to read error response body. Cause: " + ex.Message;
+		}
+
+		if (string.IsNullOrWhiteSpace(errorBodyString))
+		{
+			errorBodyString = "No error body received from server. Status code: " + statusCode;
+		}
+
+		if (statusCode >= HttpStatusCode.BadRequest && statusCode < HttpStatusCode.InternalServerError)
+		{
+			try
+			{
+				var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>(jsonOptions);
+				var errorMessage = errorResponse?.Error ?? "Unknown error";
+
+				throw statusCode  switch
+				{
+					HttpStatusCode.BadRequest => new IPLocateInvalidIPException(errorMessage),
+					HttpStatusCode.Forbidden => new IPLocateApiKeyException(errorMessage),
+					HttpStatusCode.NotFound => new IPLocateNotFoundException(errorMessage),
+					HttpStatusCode.TooManyRequests => new IPLocateRateLimitException(errorMessage),
+					_ => new IPLocateApiException("API error: " + errorMessage, statusCode),
+				};
+			}
+			catch (JsonException)
+			{
+				string baseMessage = "API request failed with status code " + statusCode +
+									  ". Unable to parse error response. Raw error: " + errorBodyString;
+				throw statusCode switch
+				{
+					HttpStatusCode.BadRequest => new IPLocateInvalidIPException(baseMessage),
+					HttpStatusCode.Forbidden => new IPLocateApiKeyException(baseMessage),
+					HttpStatusCode.NotFound => new IPLocateNotFoundException(baseMessage),
+					HttpStatusCode.TooManyRequests => new IPLocateRateLimitException(baseMessage),
+					_ => new IPLocateApiException("API error: " + baseMessage, statusCode),
+				};
+			}
+			throw new IPLocateServiceException($"Authentication failed with status code {statusCode}. Response body: {errorBodyString}", statusCode);
+		}
+		else if (statusCode >= HttpStatusCode.InternalServerError)
+		{
+			throw new IPLocateServiceException($"Server error: {errorBodyString}", statusCode);
+		}
+		else
+		{
+			throw new IPLocateApiException($"Unexpected  Http status code: {statusCode}. Response: {errorBodyString}", statusCode);
+		}
+	}
+}
