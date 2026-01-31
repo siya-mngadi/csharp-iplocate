@@ -6,69 +6,24 @@ using System.Text.Json;
 
 namespace iplocate_client;
 
-public class IpLocateHttpClient : IPLocateService
+public sealed class IpLocateClient
 {
-	private const string DEFAULT_BASE_URL = "https://iplocate.io/api";
-	private const int DEFAULT_TIMEOUT_MS = 30000; // 30 seconds (maximum time for call)
-
-	private const string HEADER_ACCEPT = "Accept";
-    private const string HEADER_USER_AGENT = "User-Agent";
-    private const string CONTENT_TYPE_JSON = "application/json";
-    private const string QUERY_PARAM_API_KEY = "apikey";
-    private const string DEFAULT_USER_AGENT = "IPLocateClient-OkHttp/1.0";
- 
-    private readonly string ApiKey;
-    private readonly string UserAgent;
-	private readonly Uri BaseUrl;
-	private readonly HttpClient httpClient;
-	private readonly JsonSerializerOptions jsonOptions = new (JsonSerializerDefaults.Web)
+	private readonly HttpClient _client;
+	private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
 	{
-		PropertyNameCaseInsensitive = true
+		PropertyNameCaseInsensitive = true,
 	};
-
-	public IpLocateHttpClient(string apiKey)
-		:this(apiKey, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT)
+	public IpLocateClient(HttpClient client)
 	{
-	}
-
-	public IpLocateHttpClient(string apiKey, string baseUrl)
-		:this(apiKey, baseUrl, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT)
-	{
-	}
-
-	public IpLocateHttpClient(string apiKey, string baseUrl, int timeoutMs, string userAgent)
-	{
-		ArgumentException.ThrowIfNullOrEmpty(apiKey, nameof(apiKey));	
-		ArgumentException.ThrowIfNullOrEmpty(baseUrl, nameof(baseUrl));		
-		ArgumentOutOfRangeException.ThrowIfNegative(timeoutMs, nameof(timeoutMs));
-
-		ApiKey = apiKey;
-		if(!Uri.TryCreate(baseUrl,UriKind.RelativeOrAbsolute ,out Uri Url))
-			throw new ArgumentException("Invalid base URL format: {baseUrl}", nameof(baseUrl));
-
-		BaseUrl = Url;
-		UserAgent = string.IsNullOrWhiteSpace(userAgent) ? DEFAULT_USER_AGENT : userAgent;
-
-		httpClient = new HttpClient
-		{
-			BaseAddress = Url,
-			Timeout = TimeSpan.FromMilliseconds(timeoutMs),
-			DefaultRequestHeaders =
-			{
-				{ HEADER_USER_AGENT, UserAgent },
-				{ HEADER_ACCEPT, CONTENT_TYPE_JSON },
-				{ QUERY_PARAM_API_KEY, ApiKey }
-			}
-		};
+		_client = client;
 	}
 
 	public async ValueTask<IPLocateResponse> LookupAsync(string ipAddress)
 	{
-		if(string.IsNullOrWhiteSpace(ipAddress))
+		if (string.IsNullOrWhiteSpace(ipAddress))
 		{
 			throw new ArgumentException("IP address cannot be null or empty", nameof(ipAddress));
 		}
-
 		return await performLookup(ipAddress);
 	}
 
@@ -78,22 +33,18 @@ public class IpLocateHttpClient : IPLocateService
 	}
 
 	private async ValueTask<IPLocateResponse> performLookup(string ipAddressPathSegment)
-	{	
+	{
 		var lookupPath = string.IsNullOrWhiteSpace(ipAddressPathSegment) ? "api/lookup" : $"api/lookup/{ipAddressPathSegment}";
-		var baseUri = new Uri(BaseUrl, lookupPath);
-
-		var request = new HttpRequestMessage(HttpMethod.Get, baseUri.AbsolutePath)
+		if (!Uri.TryCreate(_client.BaseAddress, lookupPath, out var url))
 		{
-			Headers =
-			{
-				{ HEADER_USER_AGENT, UserAgent },
-				{ HEADER_ACCEPT, CONTENT_TYPE_JSON },
-			}
-		};
+			throw new ArgumentException("Failed to create valid URL for IPLocate API request.");
+		}
+
+		var request = new HttpRequestMessage(HttpMethod.Get, url.AbsolutePath);
 
 		try
 		{
-			var response = await httpClient.SendAsync(request);
+			var response = await _client.SendAsync(request);
 			if (response.IsSuccessStatusCode)
 			{
 				try
@@ -147,7 +98,7 @@ public class IpLocateHttpClient : IPLocateService
 				var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>(jsonOptions);
 				var errorMessage = errorResponse?.Error ?? "Unknown error";
 
-				throw statusCode  switch
+				throw statusCode switch
 				{
 					HttpStatusCode.BadRequest => new IPLocateInvalidIPException(errorMessage),
 					HttpStatusCode.Forbidden => new IPLocateApiKeyException(errorMessage),

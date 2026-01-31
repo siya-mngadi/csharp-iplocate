@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using iplocate_client;
 using iplocate_client.Exceptions;
-using iplocate_client.Models;
 using System.Net;
-using System.Text.Json;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -17,8 +15,7 @@ public class IPLocateClientTests : IDisposable
 		_server = WireMockServer.Start(8010);
 	}
 
-	private string GetTestApiBaseUrl()
-		=> $"http://localhost:{_server.Port}/api";
+	private string GetTestApiBaseUrl() => $"http://localhost:{_server.Port}/api";
 
 	[Fact]
 	public async Task Successful_lookup()
@@ -55,7 +52,7 @@ public class IPLocateClientTests : IDisposable
 				.WithBody(json.Trim())
 		);
 
-		var client = new IpLocateHttpClient(apiKey, GetTestApiBaseUrl());
+		var client =  await IpLocateClientFactory.ClientAsync(apiKey, GetTestApiBaseUrl());
 		var response = await client.LookupAsync(ip);
 
 		response.Should().NotBeNull();
@@ -91,7 +88,7 @@ public class IPLocateClientTests : IDisposable
 				.WithBodyAsJson(jsonObj)
 		);
 
-		var client = new IpLocateHttpClient(apiKey, GetTestApiBaseUrl());
+		var client = await IpLocateClientFactory.ClientAsync(apiKey, GetTestApiBaseUrl());
 		var response = await client.LookupCurrentIpAsync();
 
 		response.Ip.Should().Be("1.2.3.4");
@@ -116,7 +113,7 @@ public class IPLocateClientTests : IDisposable
 				.WithBodyAsJson(new { error = "Unknown token" })
 		);
 
-		var client = new IpLocateHttpClient(apiKey, GetTestApiBaseUrl());
+		var client = await IpLocateClientFactory.ClientAsync(apiKey, GetTestApiBaseUrl());
 		await Assert.ThrowsAsync<IPLocateApiKeyException>(async() => await client.LookupAsync(ip));
 	}
 
@@ -138,7 +135,7 @@ public class IPLocateClientTests : IDisposable
 				.WithBody("{\"error\":\"Rate limit exceeded\"}")
 		);
 
-		var client = new IpLocateHttpClient(apiKey, GetTestApiBaseUrl());
+		var client = await IpLocateClientFactory.ClientAsync(apiKey, GetTestApiBaseUrl());
 		await Assert.ThrowsAsync<IPLocateRateLimitException>(async ()  => await client.LookupAsync(ip));
 	}
 
@@ -160,7 +157,7 @@ public class IPLocateClientTests : IDisposable
 				.WithBody("Internal server error")
 		);
 
-		var client = new IpLocateHttpClient(apiKey, GetTestApiBaseUrl());
+		var client = await IpLocateClientFactory.ClientAsync(apiKey, GetTestApiBaseUrl());
 
 		var ex = await Assert.ThrowsAsync<IPLocateServiceException>(async() => await client.LookupAsync(ip));
 		ex.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
@@ -168,15 +165,15 @@ public class IPLocateClientTests : IDisposable
 	}
 
 	[Fact]
-	public void Null_api_key_throws()
+	public async Task Null_api_key_throws()
 	{
-		Assert.Throws<ArgumentNullException>(() => new IpLocateHttpClient(null));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await IpLocateClientFactory.ClientAsync(null));
 	}
 
 	[Fact]
-	public void Empty_api_key_throws()
+	public async Task Empty_api_key_throws()
 	{
-		Assert.Throws<ArgumentException>(() => new IpLocateHttpClient(string.Empty));
+		await Assert.ThrowsAsync<ArgumentException>(async() => await IpLocateClientFactory.ClientAsync(string.Empty));
 	}
 
 	public void Dispose()
