@@ -11,17 +11,17 @@ public static class IpLocateClientFactory
 	private const string CONTENT_TYPE_JSON = "application/json";
 	private const string DEFAULT_USER_AGENT = "IPLocateClient-OkHttp/1.0";
 
-	public static async ValueTask<IpLocateClient> ClientAsync(string apiKey)
+	public static IpLocateClient Client(string apiKey)
 	{
-		return await ClientAsync(apiKey, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT);
+		return Client(apiKey, DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT);
 	}
 
-	public static async ValueTask<IpLocateClient> ClientAsync(string apiKey, string baseUrl)
+	public static IpLocateClient Client(string apiKey, string baseUrl)
 	{
-		return await ClientAsync(apiKey, baseUrl, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT);
+		return Client(apiKey, baseUrl, DEFAULT_TIMEOUT_MS, DEFAULT_USER_AGENT);
 	}
 
-	public static async ValueTask<IpLocateClient> ClientAsync(string apiKey, string baseUrl, int timeoutMs, string userAgent)
+	public static IpLocateClient Client(string apiKey, string baseUrl, int timeoutMs, string userAgent)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(apiKey, nameof(apiKey));
 		ArgumentException.ThrowIfNullOrEmpty(baseUrl, nameof(baseUrl));
@@ -41,6 +41,6 @@ public static class IpLocateClientFactory
 				{ HEADER_API_KEY, apiKey},
 			}
 		};
-		return await ValueTask.FromResult(new IpLocateClient(httpClient));
+		return new IpLocateClient(httpClient);
 	}
 }
