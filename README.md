@@ -32,7 +32,7 @@ dotnet add package IpLocate
 Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IPLocateClient` constructor:
 
 ```csharp
-IPLocateClient client = await IpLocateClientFactory.ClientAsync("YOUR_API_KEY");
+IPLocateClient client = IpLocateClientFactory.Client("YOUR_API_KEY");
 ```
 
 ### Quick start
@@ -40,7 +40,7 @@ IPLocateClient client = await IpLocateClientFactory.ClientAsync("YOUR_API_KEY");
 ```csharp
 using IpLocate;
 
-var client = await IpLocateClientFactory.ClientAsync("YOUR_API_KEY");
+var client = IpLocateClientFactory.Client("YOUR_API_KEY");
 var result = await client.LookupCurrentIpAsync();
 
 Console.WriteLine($"IP: {result.Ip}, Country: {result.Country}");
