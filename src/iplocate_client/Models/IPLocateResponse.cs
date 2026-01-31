@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace iplocate_client.Models;
+namespace IpLocateClient.Models;
 
 public class IPLocateResponse
 {
