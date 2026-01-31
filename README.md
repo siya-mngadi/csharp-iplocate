@@ -4,7 +4,6 @@
 
 [![NuGet](https://img.shields.io/nuget/v/IpLocate.svg?style=flat-square)](https://www.nuget.org/packages/IpLocate/)
 
-
 A C# client for the [IPLocate.io](https://iplocate.io) geolocation API. Look up detailed geolocation and threat intelligence data for any IP address:
 
 - **IP geolocation**: IP to country, IP to city, IP to region/state, coordinates, timezone, postal code
@@ -23,6 +22,7 @@ You can make 1,000 free requests per day with a [free account](https://iplocate.
 ## Installation
 
 ### .NET CLI
+
 ```cmd
 dotnet add package IpLocate
 ```
@@ -32,7 +32,7 @@ dotnet add package IpLocate
 Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IPLocateClient` constructor:
 
 ```csharp
-IPLocateClient client = new IpLocateHttpClient("your-api-key");
+IPLocateClient client = await IpLocateClientFactory.ClientAsync("YOUR_API_KEY");
 ```
 
 ### Quick start
@@ -40,9 +40,37 @@ IPLocateClient client = new IpLocateHttpClient("your-api-key");
 ```csharp
 using IpLocate;
 
-var client = new IpLocateHttpClient("YOUR_API_KEY");
+var client = await IpLocateClientFactory.ClientAsync("YOUR_API_KEY");
 var result = await client.LookupCurrentIpAsync();
 
 Console.WriteLine($"IP: {result.Ip}, Country: {result.Country}");
 ```
 
+### DI
+
+```csharp
+services.AddHttpClient<IPLocateClient>((sp, http) =>
+{
+	var opts = sp.GetRequiredService<IOptions<MyApiOptions>>();
+	http.BaseAddress = new Uri(opts.Value.BaseUrl);
+	http.DefaultRequestHeaders.Add("X-Api-Key", opts.Value.ApiKey);
+	http.DefaultRequestHeaders.Add("Accept", "application/json");
+	http.DefaultRequestHeaders.Add("User-Agent", "IPLocateClient-OkHttp/1.0.0");
+});
+```
+
+## API reference
+
+For complete API documentation, visit [iplocate.io/docs](https://iplocate.io/docs).
+
+## License
+
+This project is licensed under the MIT License - see the `LICENSE` file for details
+
+## Testing
+
+To run tests for this C# library:
+
+```cmd
+dotnet test
+```
