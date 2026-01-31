@@ -46,7 +46,7 @@ var result = await client.LookupCurrentIpAsync();
 Console.WriteLine($"IP: {result.Ip}, Country: {result.Country}");
 ```
 
-### DI
+### Dependency Injection
 
 ```csharp
 services.AddHttpClient<IPLocateClient>((sp, http) =>
