@@ -10,7 +10,6 @@ namespace IpLocate;
 public sealed class IpLocateClient
 {
 	private readonly HttpClient _client;
-	private readonly  ConcurrentDictionary<string, IPLocateResponse> _cache = new();	
 	private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
 	{
 		PropertyNameCaseInsensitive = true,
