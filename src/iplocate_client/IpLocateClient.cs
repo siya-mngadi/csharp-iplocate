@@ -1,14 +1,16 @@
-﻿using iplocate_client.Exceptions;
-using iplocate_client.Models;
+﻿using IpLocateClient.Exceptions;
+using IpLocateClient.Models;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace iplocate_client;
+namespace IpLocateClient;
 
 public sealed class IpLocateClient
 {
 	private readonly HttpClient _client;
+	private readonly  ConcurrentDictionary<string, IPLocateResponse> _cache = new();	
 	private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
 	{
 		PropertyNameCaseInsensitive = true,
@@ -24,12 +26,16 @@ public sealed class IpLocateClient
 		{
 			throw new ArgumentException("IP address cannot be null or empty", nameof(ipAddress));
 		}
-		return await performLookup(ipAddress);
+		if (_cache.TryGetValue(ipAddress, out var cachedResult)) return cachedResult;
+		var result = await performLookup(ipAddress);
+		return result;
 	}
 
 	public async ValueTask<IPLocateResponse> LookupCurrentIpAsync()
 	{
-		return await performLookup(null);
+		var result = await performLookup(null);
+		_cache.TryAdd(result.Ip, result);
+		return result;
 	}
 
 	private async ValueTask<IPLocateResponse> performLookup(string ipAddressPathSegment)

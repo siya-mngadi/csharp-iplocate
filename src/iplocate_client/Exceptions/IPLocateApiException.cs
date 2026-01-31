@@ -1,7 +1,7 @@
 ﻿
 using System.Net;
 
-namespace iplocate_client.Exceptions;
+namespace IpLocateClient.Exceptions;
 
 public class IPLocateApiException : Exception
 {
