@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using IpLocateClient.Exceptions;
-using IpLocateClient;
+using IpLocate.Exceptions;
+using IpLocate;
 using System.Net;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;

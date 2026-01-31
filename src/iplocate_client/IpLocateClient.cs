@@ -1,11 +1,11 @@
-﻿using IpLocateClient.Exceptions;
-using IpLocateClient.Models;
+﻿using IpLocate.Exceptions;
+using IpLocate.Models;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace IpLocateClient;
+namespace IpLocate;
 
 public sealed class IpLocateClient
 {

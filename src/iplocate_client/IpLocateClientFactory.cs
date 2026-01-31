@@ -1,4 +1,4 @@
-﻿namespace IpLocateClient;
+﻿namespace IpLocate;
 
 public static class IpLocateClientFactory
 {

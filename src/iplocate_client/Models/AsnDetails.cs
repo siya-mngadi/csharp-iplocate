@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace IpLocateClient.Models;
+namespace IpLocate.Models;
 
 public class AsnDetails
 {
