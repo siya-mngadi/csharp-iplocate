@@ -1,6 +1,5 @@
 ﻿using IpLocate.Exceptions;
 using IpLocate.Models;
-using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -25,7 +24,6 @@ public sealed class IpLocateClient
 		{
 			throw new ArgumentException("IP address cannot be null or empty", nameof(ipAddress));
 		}
-		if (_cache.TryGetValue(ipAddress, out var cachedResult)) return cachedResult;
 		var result = await performLookup(ipAddress);
 		return result;
 	}
@@ -33,7 +31,6 @@ public sealed class IpLocateClient
 	public async ValueTask<IPLocateResponse> LookupCurrentIpAsync()
 	{
 		var result = await performLookup(null);
-		_cache.TryAdd(result.Ip, result);
 		return result;
 	}
 
