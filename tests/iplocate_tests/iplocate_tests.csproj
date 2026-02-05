@@ -19,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\iplocate_client\iplocate_client.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>

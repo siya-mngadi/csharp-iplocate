@@ -1,16 +1,18 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
-namespace IpLocate.Exceptions;
-
-public class IPLocateServiceException : IPLocateApiException
+namespace IpLocate.Exceptions
 {
-	public IPLocateServiceException(string message, HttpStatusCode statusCode) 
-		:base(message, statusCode)
+	public class IPLocateServiceException : IPLocateApiException
 	{
-	}
+		public IPLocateServiceException(string message, HttpStatusCode statusCode) 
+			:base(message, statusCode)
+		{
+		}
 
-	public IPLocateServiceException(string message, HttpStatusCode statusCode, Exception inner)
-		: base(message, statusCode, inner)
-	{		
+		public IPLocateServiceException(string message, HttpStatusCode statusCode, Exception inner)
+			: base(message, statusCode, inner)
+		{		
+		}
 	}
 }

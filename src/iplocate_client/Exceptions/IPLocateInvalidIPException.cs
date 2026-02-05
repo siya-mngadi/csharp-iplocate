@@ -1,12 +1,12 @@
 ﻿using System.Net;
 
-namespace IpLocate.Exceptions;
-
-public class IPLocateInvalidIPException : IPLocateApiException
+namespace IpLocate.Exceptions
 {
-	public IPLocateInvalidIPException(string message)
-		: base(message, HttpStatusCode.BadRequest)
+	public class IPLocateInvalidIPException : IPLocateApiException
 	{
-		
+		public IPLocateInvalidIPException(string message)
+			: base(message, HttpStatusCode.BadRequest)
+		{
+		}
 	}
 }

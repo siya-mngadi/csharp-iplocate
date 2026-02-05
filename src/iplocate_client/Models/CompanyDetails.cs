@@ -1,19 +1,20 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
-namespace IpLocate.Models;
-
-public class CompanyDetails
+namespace IpLocate.Models
 {
-	[JsonPropertyName("domain")]
-	public string Domain { get; set; }
-	[JsonPropertyName("name")]
-	public string Name { get; set; }
-	[JsonPropertyName("country_code")]
-	public string CountryCode { get; set; }
-	[JsonPropertyName("type")]
-	public string Type { get; set; }
-	public override string ToString()
+	public class CompanyDetails
 	{
-		return $"{GetType().Name}: [ name = {Name}, Domain = {Domain}]";
+		[JsonProperty("domain")]
+		public string Domain { get; set; }
+		[JsonProperty("name")]
+		public string Name { get; set; }
+		[JsonProperty("country_code")]
+		public string CountryCode { get; set; }
+		[JsonProperty("type")]
+		public string Type { get; set; }
+		public override string ToString()
+		{
+			return $"{GetType().Name}: [ name = {Name}, Domain = {Domain}]";
+		}
 	}
 }

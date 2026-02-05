@@ -1,23 +1,24 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
-namespace IpLocate.Models;
-
-public class HostingDetails
+namespace IpLocate.Models
 {
-	[JsonPropertyName("provider")]
-	public string Provider { get; set; }
-
-	[JsonPropertyName("domain")]
-	public string Domain {get;set;}
-	[JsonPropertyName("network")]
-	public string Network {get;set;}
-	[JsonPropertyName("region")]
-	public string Region {get;set;}
-	[JsonPropertyName("service")]
-	public string Service {get;set;}
-	
-	public override string ToString()
+	public class HostingDetails
 	{
-		return $"{GetType().Name}: [provider = {Provider}, service = {Service}]";
+		[JsonProperty("provider")]
+		public string Provider { get; set; }
+
+		[JsonProperty("domain")]
+		public string Domain {get;set;}
+		[JsonProperty("network")]
+		public string Network {get;set;}
+		[JsonProperty("region")]
+		public string Region {get;set;}
+		[JsonProperty("service")]
+		public string Service {get;set;}
+	
+		public override string ToString()
+		{
+			return $"{GetType().Name}: [provider = {Provider}, service = {Service}]";
+		}
 	}
 }

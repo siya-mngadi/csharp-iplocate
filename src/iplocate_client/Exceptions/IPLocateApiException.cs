@@ -1,20 +1,21 @@
-﻿
+﻿using System;
 using System.Net;
 
-namespace IpLocate.Exceptions;
-
-public class IPLocateApiException : Exception
+namespace IpLocate.Exceptions
 {
-	public HttpStatusCode StatusCode { get; init; }
-	public IPLocateApiException(string message, HttpStatusCode statusCode)
-		: base(message)
+	public class IPLocateApiException : Exception
 	{
-		StatusCode = statusCode; 
-	}
+		public HttpStatusCode StatusCode { get; set; }
+		public IPLocateApiException(string message, HttpStatusCode statusCode)
+			: base(message)
+		{
+			StatusCode = statusCode; 
+		}
 
-	public IPLocateApiException(string message, HttpStatusCode statusCode, Exception innerException) 
-		: base(message, innerException)
-	{
-		StatusCode = statusCode;
+		public IPLocateApiException(string message, HttpStatusCode statusCode, Exception innerException) 
+			: base(message, innerException)
+		{
+			StatusCode = statusCode;
+		}
 	}
 }
