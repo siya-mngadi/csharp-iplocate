@@ -1,12 +1,12 @@
 ﻿using System.Net;
 
-namespace IpLocate.Exceptions;
-
-public class IPLocateNotFoundException : IPLocateApiException
+namespace IpLocate.Exceptions
 {
-	public IPLocateNotFoundException(string message) 
-		: base(message, HttpStatusCode.NotFound)
+	public class IPLocateNotFoundException : IPLocateApiException
 	{
-		
+		public IPLocateNotFoundException(string message) 
+			: base(message, HttpStatusCode.NotFound)
+		{
+		}
 	}
 }

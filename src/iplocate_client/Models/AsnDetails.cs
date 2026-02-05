@@ -1,27 +1,28 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
-namespace IpLocate.Models;
-
-public class AsnDetails
+namespace IpLocate.Models
 {
-	[JsonPropertyName("asn")]
-	public string Asn { get; set; }
-	[JsonPropertyName("route")]
-	public string Route { get; set; }
-	[JsonPropertyName("netname")]
-	public string Netname { get; set; }
-	[JsonPropertyName("name")]
-	public string Name { get; set; }
-	[JsonPropertyName("country_code")]
-	public string CountryCode { get; set; }
-	[JsonPropertyName("domain")]
-	public string Domain { get; set; }
-	[JsonPropertyName("type")]
-	public string Type { get; set; }
-	[JsonPropertyName("rir")]
-	public string Rir { get; set; }
-	public override string ToString()
+	public class AsnDetails
 	{
-		return $"{GetType().Name}: [asn = {Asn}, name={Name}]";
+		[JsonProperty("asn")]
+		public string Asn { get; set; }
+		[JsonProperty("route")]
+		public string Route { get; set; }
+		[JsonProperty("netname")]
+		public string Netname { get; set; }
+		[JsonProperty("name")]
+		public string Name { get; set; }
+		[JsonProperty("country_code")]
+		public string CountryCode { get; set; }
+		[JsonProperty("domain")]
+		public string Domain { get; set; }
+		[JsonProperty("type")]
+		public string Type { get; set; }
+		[JsonProperty("rir")]
+		public string Rir { get; set; }
+		public override string ToString()
+		{
+			return $"{GetType().Name}: [asn = {Asn}, name={Name}]";
+		}
 	}
 }

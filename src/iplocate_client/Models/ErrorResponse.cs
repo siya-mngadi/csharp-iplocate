@@ -1,13 +1,15 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
-namespace IpLocate.Models;
 
-public class ErrorResponse
+namespace IpLocate.Models
 {
-	[JsonPropertyName("error")]
-	public string Error { get; set; }
-	public override string ToString()
+	public class ErrorResponse
 	{
-		return $"{GetType().Name}: [error = {Error}]";
+		[JsonProperty("error")]
+		public string Error { get; set; }
+		public override string ToString()
+		{
+			return $"{GetType().Name}: [error = {Error}]";
+		}
 	}
 }
