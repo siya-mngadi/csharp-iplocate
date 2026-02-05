@@ -29,7 +29,7 @@ dotnet add package IpLocate
 
 ## Authentication
 
-Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IPLocateClient` constructor:
+Get your free API key from [IPLocate.io](https://iplocate.io/signup), and pass it to the `IpLocateClientFactory.Client` method:
 
 ```csharp
 IPLocateClient client = IpLocateClientFactory.Client("YOUR_API_KEY");
